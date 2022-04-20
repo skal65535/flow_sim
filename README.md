@@ -8,7 +8,7 @@ This is a toy project with the building blocks for a basic Eulerian flow simulat
 
 I use this as a learning sandbox.
 
-<p align="center">![flow example](https://github.com/skal65535/flow_sim/blob/main/example.flow.png "flow example")</>
+<p align="center"><img src="https://github.com/skal65535/flow_sim/blob/main/example.flow.png"></p>
 
 * ShaderToy version: https://www.shadertoy.com/view/ft2czK
 
