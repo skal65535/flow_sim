@@ -10,6 +10,12 @@ I use this as a learning sandbox.
 
 <p align="center"><img src="https://github.com/skal65535/flow_sim/blob/main/example.flow.png"></p>
 
+The sim.cc main simulation uses SDL1 for display.
+There's also a small 'gauss.cc' tool to generate the pre-iterated pressure-solver
+steps code. You can change the number of steps for experimention purpose.
+
+Code is released under MIT license.
+
 * ShaderToy version: https://www.shadertoy.com/view/ft2czK
 
 * Some literature:
