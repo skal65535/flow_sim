@@ -1,14 +1,14 @@
-Fluid flow simulation proto in C++
+Small fluid flow simulation prototype in C++
 
 * Used for experimenting fluid flow simulation in C++
 
-This is a toy project demonstrating the building blocks for any basic
-Eulerian flow simulation: advection -> forces -> pressure-solver to get
-a divergence-free flow -> advect tracer particles
+This is a toy project with the building blocks for a basic Eulerian flow simulation: 
+
+[advection] -> [add forces] -> [pressure-solver to get a divergence-free flow] -> [advect tracer particles]
 
 I use this as a learning sandbox.
 
-* ![flow example](https://github.com/skal65535/flow_sim/blob/main/example.flow.png "flow example")
+<p align="center">![flow example](https://github.com/skal65535/flow_sim/blob/main/example.flow.png "flow example")</>
 
 * ShaderToy version: https://www.shadertoy.com/view/ft2czK
 
@@ -19,4 +19,3 @@ I use this as a learning sandbox.
   https://www.youtube.com/watch?v=gJMBEvYEfJI
 
   http://jamie-wong.com/2016/08/05/webgl-fluid-simulation/
-
