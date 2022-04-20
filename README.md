@@ -8,7 +8,7 @@ a divergence-free flow -> advect tracer particles
 
 I use this as a learning sandbox.
 
-* ![flow example](https://github.com/skal65535/flow_sim/blob/master/example.flow.png "flow example")
+* ![flow example](https://github.com/skal65535/flow_sim/blob/main/example.flow.png "flow example")
 
 * ShaderToy version: https://www.shadertoy.com/view/ft2czK
 
