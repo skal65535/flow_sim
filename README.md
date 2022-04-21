@@ -8,9 +8,9 @@ This is a toy project for playing with the building blocks of a basic Eulerian f
 
 Code is released under MIT license.
 
-* ShaderToy version: https://www.shadertoy.com/view/ft2czK
+# ShaderToy version: https://www.shadertoy.com/view/ft2czK
 
-* Building
+# Building
 
 src/sim.cc is the simulation code. It can display the flow using SDL1.
 There's also a small 'gauss.cc' tool to generate the pre-iterated pressure-solver
@@ -19,9 +19,9 @@ code.
 
 You can build with 'cmake':
 
-*   `mkdir build && cd build && cmake ../ && make -j`
+   `mkdir build && cd build && cmake ../ && make -j`
 
-* Some literature:
+# Some literature:
 
   https://gist.github.com/vassvik/f06a453c18eae03a9ad4dc8cc011d2dc
 
