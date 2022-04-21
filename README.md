@@ -8,7 +8,9 @@ This is a toy project for playing with the building blocks of a basic Eulerian f
 
 Code is released under MIT license.
 
-# ShaderToy version: https://www.shadertoy.com/view/ft2czK
+# ShaderToy version:
+
+   https://www.shadertoy.com/view/ft2czK
 
 # Building
 
