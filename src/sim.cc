@@ -400,11 +400,11 @@ struct Simulation {
       if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
       uint32_t* const dst = (uint32_t*)surface->pixels;
       const int stride = surface->pitch / sizeof(*dst);
-      const auto display_1d = [&dst](int x, int y, float& v) {
+      const auto display_1d = [&](int x, int y, float& v) {
           const uint8_t C = std::min(255.f, 128.f + v * 128.f);
           dst[x + y * stride] = (C * 0x010101u) | 0xff000000u;
       };
-      const auto display_2d = [&dst](int x, int y, f2& v) {
+      const auto display_2d = [&](int x, int y, f2& v) {
           const uint8_t C = std::min(255.f, v.norm() * 255.f);
           dst[x + y * stride] = (C * 0x010101u) | 0xff000000u;
       };
