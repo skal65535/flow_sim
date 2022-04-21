@@ -1,22 +1,25 @@
-Small fluid flow simulation prototype in C++
-
-* Used for experimenting fluid flow simulation in C++
-
-This is a toy project with the building blocks for a basic Eulerian flow simulation: 
-
-[advection] -> [add forces] -> [pressure-solver to get a divergence-free flow] -> [advect tracer particles]
-
-I use this as a learning sandbox.
+Small C++ prototype of fluid flow simulation.
 
 <p align="center"><img src="https://github.com/skal65535/flow_sim/blob/main/example.flow.png"></p>
 
-The sim.cc main simulation uses SDL1 for display.
-There's also a small 'gauss.cc' tool to generate the pre-iterated pressure-solver
-steps code. You can change the number of steps for experimention purpose.
+This is a toy project for playing with the building blocks of a basic Eulerian flow simulation: 
+
+[advection] -> [add forces] -> [pressure-solver to get a divergence-free flow] -> [advect tracer particles]
 
 Code is released under MIT license.
 
 * ShaderToy version: https://www.shadertoy.com/view/ft2czK
+
+* Building
+
+src/sim.cc is the simulation code. It can display the flow using SDL1.
+There's also a small 'gauss.cc' tool to generate the pre-iterated pressure-solver
+steps code, in case you want to change the number of Jacobi steps in the
+code.
+
+You can build with 'cmake':
+
+*   `mkdir build && cd build && cmake ../ && make -j`
 
 * Some literature:
 

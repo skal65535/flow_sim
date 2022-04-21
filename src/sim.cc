@@ -20,9 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <cstdio>
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <cstring>
+#include <cstdio>
 
 #include <algorithm>
 #include <string>
@@ -30,8 +31,6 @@
 
 using std::string;
 using std::vector;
-
-#define DBG 1
 
 #if defined(SIM_HAVE_SDL)
 #include <SDL.h>
@@ -95,7 +94,7 @@ template<typename T> struct Field {
       ++y;
     }
   }
-  template<typename P, typename FN> void Emit(FN fn, P& p) const {
+  template<typename P, typename FN> void Dump(FN fn, P& p) const {
     int y = 0;
     for (auto& v : data_) {
       for (auto& cell : v) fn(p, cell);
@@ -110,12 +109,11 @@ template<typename T> struct Field {
   vector<T>& operator[](int y) { return data_[y]; }
 
   void GetDisplacement(const Field<T>& src, float dt) {
-
-    Process([&](int x, int y, f2& out) {
+    Process([&src, &dt](int x, int y, f2& out) {
       const f2 xy(x, y);
       const f2 k1 = dt * src.at(x, y);
       const f2 k2 = dt * src.get(xy - 0.5 * k1);
-#if DBG     // simple Mid-Point step
+#if 0     // simple Mid-Point step
       out = k2;
 #else       // 4th-order Runge-Kutta
       const f2 k3 = dt * src.get(xy - 0.5f * k2);
@@ -134,16 +132,9 @@ template<typename T> struct Field {
   }   
 
  protected:
-  friend void Swap(Field& A, Field& B);
   int W_, H_;
   Array data_;
 };
-
-template<typename T>
-static void Swap(Field<T>& A, Field<T>& B) {
-  assert(A.W_ == B.W_ && A.H_ == B.H_);
-  std::swap(A.data_, B.data_);
-}
 
 typedef Field<f1> Vec1;
 typedef Field<f2> Vec2;
@@ -162,7 +153,6 @@ void Divergence(const Vec2& v, Vec1& div) {
 void SolvePressure(const Vec1& div, Vec1& p, int nb_iters) {
   double diff = 0.;
   for (int n = 0; n < nb_iters; ++n) {
-    Vec1 p1 = p;  // TODO: swap instead
     diff = 0.;
     p.Process([&](int x, int y, float& out) {
       const float f = 0.25 * (div.at(x, y)
@@ -241,7 +231,7 @@ void SolvePressure9(const Vec1& div, Vec1& pressure, int nb_iters) {
 }
 
 void ApplyGradient(const Vec1& p, Vec2& v) {
-  v.Process([&](int x, int y, f2& out) {
+  v.Process([&p](int x, int y, f2& out) {
     const f2 grad{
       p.at(x + 1, y) - p.at(x - 1, y),
       p.at(x, y + 1) - p.at(x, y - 1)
@@ -254,7 +244,7 @@ void ApplyGradient(const Vec1& p, Vec2& v) {
 // I/O
 
 static const auto Dump1 = [](FILE* f, float c) { fputc((int)(c * 255), f); };
-static const auto Dump2 = [](FILE* f, f2 c) { fputc((int)(c.norm() * 255), f); };
+static const auto Dump = [](FILE* f, f2 c) { fputc((int)(c.norm() * 255), f); };
 static const auto DumpX = [](FILE* f, f2 c) { fputc((int)(c.x * 255), f); };
 static const auto DumpY = [](FILE* f, f2 c) { fputc((int)(c.y * 255), f); };
 
@@ -268,7 +258,7 @@ bool Save(int n, const char* out, T& field, FN fn) {
     return false;
   }
   fprintf(file, "P5\n%d %d\n255\n", field.W(), field.H());
-  field.Emit(fn, file);
+  field.Dump(fn, file);
   fprintf(file, "\n");
   fclose(file);
   printf("saved output '%s'\n", tmp);
@@ -285,14 +275,13 @@ struct Simulation {
 
   // params
   float dt = 1.;
-  float rho = 0.05;
   int W = 600;
   int H = 300;
   int N = 20000;
   int period = 0;
   int nb_iterations = 8;
   float Cx = 0.25, Cy = 0.52, R = 0.09;
-  const char* out = "toto";
+  const char* out = NULL;
   bool use_display = true;
 
   bool ParseArgs(int argc, char* argv[]) {
@@ -311,8 +300,6 @@ struct Simulation {
         if (++c < argc) period = std::max(0, atoi(argv[c]));
       } else if (!strcmp(argv[c], "-R")) {
         if (++c < argc) R = atof(argv[c]);
-      } else if (!strcmp(argv[c], "-rho")) {
-        if (++c < argc) rho = std::max(0.00001f, (float)atof(argv[c]));
       } else if (!strcmp(argv[c], "-o")) {
         if (++c < argc) out = argv[c];
       } else if (!strcmp(argv[c], "-no_dsp")) {
@@ -320,18 +307,18 @@ struct Simulation {
       } else if (!strcmp(argv[c], "-h")) {
         printf("sim [options]\n");
         printf("  -dt <float> ........ time step\n");
-        printf("  -W <int> ........... width\n");
-        printf("  -H <int> ........... height\n");
+        printf("  -W <int> ........... grid width\n");
+        printf("  -H <int> ........... grid height\n");
         printf("  -n <int> ........... number of Jacobi solve iterations\n");
         printf("  -N <int> ........... number of steps\n");
         printf("  -p <int> ........... dumping period (0=off)\n");
-        printf("  -R <float> ......... ball radius\n");
-        printf("  -rho <float> ....... density\n");
         printf("  -o <string> ........ prefix for file dumps\n");
+        printf("  -R <float> ......... ball radius\n");
+        printf("  -no_dsp ............ don't use display\n");
         return false;
       }
     }
-    printf("Simulating %d x %d: dt=%.2f rho=%.4f  R=%.3f\n", W, H, dt, rho, R);
+    printf("Simulating %d x %d: dt=%.2f R=%.3f\n", W, H, dt, R);
     return true;
   }
 
@@ -344,7 +331,7 @@ struct Simulation {
     c.Reset();
     p.Reset();  // zero initial pressure
     // Init velocity
-    v.Process([&](int x, int y, f2& out) {
+    v.Process([](int x, int y, f2& out) {
       out = { 1.0f, 0.0f };
       const f2 rnd = {(float)drand48() * 0.1f, (float)(drand48() - .5) * 0.1f};
       out = out + rnd;
@@ -353,7 +340,7 @@ struct Simulation {
   }
 
   void OneStep() {
-    // Boundary conditions
+    // Lambdas for boundary conditions
     const auto is_ball = [&](int x, int y) -> bool {
       const f2 d = {Cx - 1.f * x / H, Cy - 1.f * y / H};
       return (d.norm() < R);
@@ -386,6 +373,7 @@ struct Simulation {
   SDL_Surface* screen = NULL;
   SDL_Surface* surface = NULL;
   int show = 1;  // 1: trace, 2: divergence, 3:pressure, 4: v.norm()
+
   bool InitDisplay() {
     if (use_display) {
       SDL_Init(SDL_INIT_VIDEO);
@@ -401,8 +389,6 @@ struct Simulation {
                                      0xff000000u);  // A mask
       if (surface == NULL) {
         fprintf(stderr, "Unable to create %dx%d RGBA surface!\n", W, H);
-        SDL_FreeSurface(screen);
-        screen = NULL;
         return false;
       }
     }
@@ -413,12 +399,12 @@ struct Simulation {
     if (surface != NULL) {
       if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
       uint32_t* const dst = (uint32_t*)surface->pixels;
-      const int stride = surface->pitch / sizeof(uint32_t);
-      const auto display_1d = [&](int x, int y, float& v) {
+      const int stride = surface->pitch / sizeof(*dst);
+      const auto display_1d = [&dst](int x, int y, float& v) {
           const uint8_t C = std::min(255.f, 128.f + v * 128.f);
           dst[x + y * stride] = (C * 0x010101u) | 0xff000000u;
       };
-      const auto display_2d = [&](int x, int y, f2& v) {
+      const auto display_2d = [&dst](int x, int y, f2& v) {
           const uint8_t C = std::min(255.f, v.norm() * 255.f);
           dst[x + y * stride] = (C * 0x010101u) | 0xff000000u;
       };
@@ -496,7 +482,7 @@ int main(int argc, char* argv[]) {  // *not* 'const char*', because SDL !
     S.OneStep();
 
     // Show something
-    stopped = S.Show() || (n == S.N - 1);  // in case
+    stopped = S.Show() || (n + 1 >= S.N);
 
     // Save regularly
     if (stopped || (S.period > 0 && (n % S.period) == 0)) {
