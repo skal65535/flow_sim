@@ -57,8 +57,6 @@ f2 operator*(float amp, const f2& xy) { return xy * amp; }
 template<typename T> struct Field {
   typedef vector<vector<T>> Array;
 
-//  Field(int W, int H) { Init(W, H); }
-
   void Init(int W, int H) {
     W_ = W - 1;
     H_ = H - 1;
@@ -501,7 +499,7 @@ int main(int argc, char* argv[]) {  // *not* 'const char*', because SDL !
     stopped = S.Show() || (n == S.N - 1);  // in case
 
     // Save regularly
-    if (stopped || (n % S.period) == 0) {
+    if (stopped || (S.period > 0 && (n % S.period) == 0)) {
       if (S.out != nullptr) Save(n, S.out, S.c, Dump1);
     }
   }
